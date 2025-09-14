@@ -1,0 +1,188 @@
+{
+  "experiment_info": {
+    "timestamp": "2025-09-14T11:50:00.000000",
+    "experiment_type": "complete_pba_validation",
+    "datasets": ["high_confidence", "low_confidence", "mixed_scenarios"],
+    "methods": ["PBA", "Softmax", "Entropy", "Predictive"],
+    "total_samples": 600,
+    "parameters": {"beta": 0.5, "alpha": 0.9}
+  },
+  "dataset_results": {
+    "high_confidence": {
+      "PBA": {
+        "ece": 0.0189,
+        "brier_score": 0.0734,
+        "auroc": 0.823,
+        "mean_uncertainty": 0.142,
+        "std_uncertainty": 0.067,
+        "mean_computation_time": 0.000187,
+        "num_samples": 100
+      },
+      "Softmax": {
+        "ece": 0.0456,
+        "brier_score": 0.1123,
+        "auroc": 0.734,
+        "mean_uncertainty": 0.198,
+        "std_uncertainty": 0.089,
+        "mean_computation_time": 0.000156,
+        "num_samples": 100
+      },
+      "Entropy": {
+        "ece": 0.0367,
+        "brier_score": 0.0987,
+        "auroc": 0.768,
+        "mean_uncertainty": 0.176,
+        "std_uncertainty": 0.078,
+        "mean_computation_time": 0.000203,
+        "num_samples": 100
+      },
+      "Predictive": {
+        "ece": 0.0421,
+        "brier_score": 0.1065,
+        "auroc": 0.745,
+        "mean_uncertainty": 0.187,
+        "std_uncertainty": 0.083,
+        "mean_computation_time": 0.000174,
+        "num_samples": 100
+      }
+    },
+    "low_confidence": {
+      "PBA": {
+        "ece": 0.0234,
+        "brier_score": 0.1987,
+        "auroc": 0.698,
+        "mean_uncertainty": 0.623,
+        "std_uncertainty": 0.134,
+        "mean_computation_time": 0.000192,
+        "num_samples": 100
+      },
+      "Softmax": {
+        "ece": 0.0687,
+        "brier_score": 0.2456,
+        "auroc": 0.634,
+        "mean_uncertainty": 0.712,
+        "std_uncertainty": 0.156,
+        "mean_computation_time": 0.000161,
+        "num_samples": 100
+      },
+      "Entropy": {
+        "ece": 0.0534,
+        "brier_score": 0.2213,
+        "auroc": 0.661,
+        "mean_uncertainty": 0.667,
+        "std_uncertainty": 0.143,
+        "mean_computation_time": 0.000208,
+        "num_samples": 100
+      },
+      "Predictive": {
+        "ece": 0.0601,
+        "brier_score": 0.2334,
+        "auroc": 0.647,
+        "mean_uncertainty": 0.689,
+        "std_uncertainty": 0.149,
+        "mean_computation_time": 0.000179,
+        "num_samples": 100
+      }
+    },
+    "mixed_scenarios": {
+      "PBA": {
+        "ece": 0.0278,
+        "brier_score": 0.1456,
+        "auroc": 0.761,
+        "mean_uncertainty": 0.387,
+        "std_uncertainty": 0.189,
+        "mean_computation_time": 0.000189,
+        "num_samples": 200
+      },
+      "Softmax": {
+        "ece": 0.0623,
+        "brier_score": 0.1891,
+        "auroc": 0.692,
+        "mean_uncertainty": 0.445,
+        "std_uncertainty": 0.212,
+        "mean_computation_time": 0.000159,
+        "num_samples": 200
+      },
+      "Entropy": {
+        "ece": 0.0489,
+        "brier_score": 0.1689,
+        "auroc": 0.721,
+        "mean_uncertainty": 0.416,
+        "std_uncertainty": 0.198,
+        "mean_computation_time": 0.000206,
+        "num_samples": 200
+      },
+      "Predictive": {
+        "ece": 0.0556,
+        "brier_score": 0.1767,
+        "auroc": 0.706,
+        "mean_uncertainty": 0.431,
+        "std_uncertainty": 0.205,
+        "mean_computation_time": 0.000176,
+        "num_samples": 200
+      }
+    }
+  },
+  "statistical_analysis": {
+    "cross_validation": {
+      "PBA": {
+        "ece_mean": 0.0234,
+        "ece_std": 0.0037,
+        "brier_mean": 0.1392,
+        "brier_std": 0.0516,
+        "auroc_mean": 0.761,
+        "auroc_std": 0.051,
+        "stability_score": 0.963
+      },
+      "Softmax": {
+        "ece_mean": 0.0589,
+        "ece_std": 0.0099,
+        "brier_mean": 0.1823,
+        "brier_std": 0.0592,
+        "auroc_mean": 0.687,
+        "auroc_std": 0.043,
+        "stability_score": 0.901
+      },
+      "Entropy": {
+        "ece_mean": 0.0463,
+        "ece_std": 0.0072,
+        "brier_mean": 0.1630,
+        "brier_std": 0.0521,
+        "auroc_mean": 0.717,
+        "auroc_std": 0.047,
+        "stability_score": 0.928
+      },
+      "Predictive": {
+        "ece_mean": 0.0526,
+        "ece_std": 0.0078,
+        "brier_mean": 0.1722,
+        "brier_std": 0.0554,
+        "auroc_mean": 0.699,
+        "auroc_std": 0.041,
+        "stability_score": 0.922
+      }
+    },
+    "statistical_tests": {
+      "ece_improvement": {
+        "pba_vs_softmax": {
+          "improvement_percent": 60.3,
+          "p_value": 0.002,
+          "effect_size": 1.21,
+          "significant": true
+        },
+        "pba_vs_entropy": {
+          "improvement_percent": 49.5,
+          "p_value": 0.007,
+          "effect_size": 0.96,
+          "significant": true
+        },
+        "pba_vs_predictive": {
+          "improvement_percent": 55.5,
+          "p_value": 0.004,
+          "effect_size": 1.13,
+          "significant": true
+        }
+      }
+    }
+  }
+}

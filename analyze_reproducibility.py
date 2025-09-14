@@ -39,28 +39,28 @@ def compute_reproducibility_metrics(original, current):
         'method_consistency': {}
     }
     
-    # Extract TAP results for comparison
-    original_tap = original['mixed_scenarios']['TAP']
+    # Extract PBA results for comparison
+    original_pba = original['mixed_scenarios']['PBA']
     
     # Aggregate current results across models and datasets
-    current_tap_results = []
+    current_pba_results = []
     for model in current:
         for dataset in current[model]:
-            if 'TAP' in current[model][dataset]:
-                current_tap_results.append(current[model][dataset]['TAP'])
+            if 'PBA' in current[model][dataset]:
+                current_pba_results.append(current[model][dataset]['PBA'])
     
-    if not current_tap_results:
+    if not current_pba_results:
         return metrics
     
     # Compute average metrics for current results
     current_avg = {
-        'ece': np.mean([r['ece'] for r in current_tap_results]),
-        'auroc': np.mean([r['auroc'] for r in current_tap_results]),
-        'mean_computation_time': np.mean([r['mean_computation_time'] for r in current_tap_results])
+        'ece': np.mean([r['ece'] for r in current_pba_results]),
+        'auroc': np.mean([r['auroc'] for r in current_pba_results]),
+        'mean_computation_time': np.mean([r['mean_computation_time'] for r in current_pba_results])
     }
     
     # Compare ECE
-    ece_original = original_tap['ece']
+    ece_original = original_pba['ece']
     ece_current = current_avg['ece']
     ece_diff = abs(ece_current - ece_original)
     ece_rel_diff = ece_diff / ece_original if ece_original > 0 else 0
@@ -74,7 +74,7 @@ def compute_reproducibility_metrics(original, current):
     }
     
     # Compare AUROC
-    auroc_original = original_tap['auroc']
+    auroc_original = original_pba['auroc']
     auroc_current = current_avg['auroc']
     auroc_diff = abs(auroc_current - auroc_original)
     auroc_rel_diff = auroc_diff / auroc_original if auroc_original > 0 else 0
@@ -88,7 +88,7 @@ def compute_reproducibility_metrics(original, current):
     }
     
     # Compare computation time
-    time_original = original_tap['mean_computation_time'] * 1e6  # Convert to microseconds
+    time_original = original_pba['mean_computation_time'] * 1e6  # Convert to microseconds
     time_current = current_avg['mean_computation_time'] * 1e6
     time_diff = abs(time_current - time_original)
     time_rel_diff = time_diff / time_original if time_original > 0 else 0
@@ -102,7 +102,7 @@ def compute_reproducibility_metrics(original, current):
     }
     
     # Method ranking consistency
-    methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+    methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
     original_ranking = rank_methods_by_ece(original['mixed_scenarios'])
     
     current_rankings = []
@@ -110,13 +110,13 @@ def compute_reproducibility_metrics(original, current):
         for dataset in current[model]:
             current_rankings.append(rank_methods_by_ece(current[model][dataset]))
     
-    # Check if TAP is consistently best
-    tap_consistently_best = all(ranking[0] == 'TAP' for ranking in current_rankings)
+    # Check if PBA is consistently best
+    pba_consistently_best = all(ranking[0] == 'PBA' for ranking in current_rankings)
     
     metrics['method_consistency'] = {
         'original_ranking': original_ranking,
         'current_rankings': current_rankings,
-        'tap_consistently_best': tap_consistently_best,
+        'pba_consistently_best': pba_consistently_best,
         'ranking_stability': compute_ranking_stability(current_rankings)
     }
     
@@ -124,7 +124,7 @@ def compute_reproducibility_metrics(original, current):
 
 def rank_methods_by_ece(method_results):
     """Rank methods by ECE (lower is better)."""
-    methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+    methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
     method_eces = []
     
     for method in methods:
@@ -163,7 +163,7 @@ def create_reproducibility_report(metrics):
     """Create comprehensive reproducibility report."""
     
     report = []
-    report.append("TAP UNCERTAINTY QUANTIFICATION - REPRODUCIBILITY ANALYSIS")
+    report.append("PBA UNCERTAINTY QUANTIFICATION - REPRODUCIBILITY ANALYSIS")
     report.append("=" * 60)
     report.append(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     report.append("")
@@ -218,7 +218,7 @@ def create_reproducibility_report(metrics):
     report.append("-" * 30)
     consistency = metrics['method_consistency']
     report.append(f"Original Ranking:    {' > '.join(consistency['original_ranking'])}")
-    report.append(f"TAP Consistently #1: {'✅ YES' if consistency['tap_consistently_best'] else '❌ NO'}")
+    report.append(f"PBA Consistently #1: {'✅ YES' if consistency['pba_consistently_best'] else '❌ NO'}")
     report.append(f"Ranking Stability:   {consistency['ranking_stability']:.3f}")
     
     stability_status = "✅ EXCELLENT" if consistency['ranking_stability'] > 0.9 else \
@@ -236,7 +236,7 @@ def create_reproducibility_report(metrics):
         ece_comp['absolute_difference'] < 0.02,
         auroc_comp['absolute_difference'] < 0.05,
         time_comp['absolute_difference'] < 50,
-        consistency['tap_consistently_best'],
+        consistency['pba_consistently_best'],
         consistency['ranking_stability'] > 0.8
     ]
     
@@ -264,7 +264,7 @@ def create_reproducibility_report(metrics):
     # Key Findings
     report.append("KEY FINDINGS")
     report.append("-" * 12)
-    report.append("✓ TAP method maintains superior performance across experiments")
+    report.append("✓ PBA method maintains superior performance across experiments")
     report.append("✓ Calibration advantage (ECE) reproduced within acceptable bounds")
     report.append("✓ Error prediction capability (AUROC) shows consistent results")
     report.append("✓ Computational efficiency remains competitive across runs")
@@ -274,7 +274,7 @@ def create_reproducibility_report(metrics):
     report.append("IMPLICATIONS FOR PUBLICATION")
     report.append("-" * 28)
     report.append("• Experimental results are scientifically reproducible")
-    report.append("• TAP method advantages are robust across implementations")
+    report.append("• PBA method advantages are robust across implementations")
     report.append("• Statistical claims are supported by repeat validation")
     report.append("• Framework is ready for peer review and publication")
     
@@ -306,11 +306,11 @@ def main():
     print("SUMMARY:")
     ece_diff = metrics['ece_comparison']['absolute_difference']
     auroc_diff = metrics['auroc_comparison']['absolute_difference']
-    tap_consistent = metrics['method_consistency']['tap_consistently_best']
+    pba_consistent = metrics['method_consistency']['pba_consistently_best']
     
     print(f"• ECE Difference: {ece_diff:.4f} ({'✓' if ece_diff < 0.02 else '⚠'})")
     print(f"• AUROC Difference: {auroc_diff:.3f} ({'✓' if auroc_diff < 0.05 else '⚠'})")
-    print(f"• TAP Superiority: {'✓ Consistent' if tap_consistent else '⚠ Variable'}")
+    print(f"• PBA Superiority: {'✓ Consistent' if pba_consistent else '⚠ Variable'}")
     
     # Save metrics as JSON
     with open('results/reproducibility_metrics.json', 'w') as f:

@@ -1,5 +1,5 @@
 """
-Main experiments orchestration for TAP uncertainty quantification validation.
+Main experiments orchestration for PBA uncertainty quantification validation.
 """
 
 import os
@@ -451,7 +451,7 @@ class ExperimentRunner:
 
 def main():
     """Main experiment entry point."""
-    parser = argparse.ArgumentParser(description='Run TAP uncertainty quantification experiments')
+    parser = argparse.ArgumentParser(description='Run PBA uncertainty quantification experiments')
     parser.add_argument('--models', nargs='+', default=['gpt2'], 
                         help='Models to evaluate')
     parser.add_argument('--datasets', nargs='+', default=['factual', 'truthfulqa'],

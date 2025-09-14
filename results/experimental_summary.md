@@ -1,34 +1,34 @@
-# TAP Uncertainty Quantification - Experimental Results
+# PBA Uncertainty Quantification - Experimental Results
 
 **Experiment Date:** 2025-09-12  
 **Total Samples:** 700 across multiple scenarios  
-**Methods Compared:** TAP, Softmax Confidence, Entropy-based, Predictive Entropy  
+**Methods Compared:** PBA, Softmax Confidence, Entropy-based, Predictive Entropy  
 **Validation:** 5-fold cross-validation with statistical significance testing
 
 ## Executive Summary
 
-Complete experimental validation of TAP (Theory of Adjacent Possible) uncertainty quantification method demonstrates superior calibration performance across multiple datasets and scenarios. The method achieves significant improvements in Expected Calibration Error while maintaining computational efficiency competitive with baseline approaches.
+Complete experimental validation of PBA (Perplexity-Based Adjacency) uncertainty quantification method demonstrates superior calibration performance across multiple datasets and scenarios. The method achieves significant improvements in Expected Calibration Error while maintaining computational efficiency competitive with baseline approaches.
 
 ## Key Findings
 
 ### 🎯 Superior Calibration Performance
-- **TAP ECE:** 0.0278 ± 0.0045 (mean ± std across folds)
+- **PBA ECE:** 0.0278 ± 0.0045 (mean ± std across folds)
 - **Softmax ECE:** 0.0697 ± 0.0089 
 - **Improvement:** 60.1% better calibration than softmax baseline (p < 0.01)
 - **Effect Size:** 1.23 (large practical significance)
 
 ### 📊 Error Prediction Capability  
-- **TAP AUROC:** 0.776 ± 0.032
+- **PBA AUROC:** 0.776 ± 0.032
 - **Baseline AUROC:** 0.681 ± 0.048 (softmax)
 - **Improvement:** 13.9% better error prediction (p < 0.05)
 
 ### ⚡ Computational Efficiency
-- **TAP Mean Time:** 0.239 μs per sample
+- **PBA Mean Time:** 0.239 μs per sample
 - **Baseline Range:** 0.201 - 0.269 μs per sample
-- **Competitive Performance:** TAP within 10% of fastest baseline
+- **Competitive Performance:** PBA within 10% of fastest baseline
 
 ### 📈 Cross-Dataset Robustness
-TAP demonstrates consistent superior performance across scenarios:
+PBA demonstrates consistent superior performance across scenarios:
 - **High Confidence Scenarios:** ECE = 0.0234 (vs 0.0567 softmax)
 - **Low Confidence Scenarios:** ECE = 0.0189 (vs 0.0789 softmax)  
 - **Mixed Scenarios:** ECE = 0.0312 (vs 0.0734 softmax)
@@ -37,7 +37,7 @@ TAP demonstrates consistent superior performance across scenarios:
 
 | Method | ECE (μ±σ) | Brier (μ±σ) | AUROC (μ±σ) | Stability Score |
 |--------|-----------|-------------|-------------|-----------------|
-| **TAP** | **0.028±0.005** | **0.163±0.023** | **0.776±0.032** | **0.946** |
+| **PBA** | **0.028±0.005** | **0.163±0.023** | **0.776±0.032** | **0.946** |
 | Softmax | 0.070±0.009 | 0.212±0.031 | 0.681±0.048 | 0.876 |
 | Entropy | 0.055±0.007 | 0.189±0.028 | 0.714±0.041 | 0.903 |
 | Predictive | 0.064±0.008 | 0.200±0.029 | 0.693±0.044 | 0.889 |
@@ -59,9 +59,9 @@ TAP demonstrates consistent superior performance across scenarios:
 
 ## Methodology Details
 
-### TAP Implementation
+### PBA Implementation
 ```
-U_TAP(s) = (1/n) * Σ[f(perplexity(s_i | s_{<i}))]
+U_PBA(s) = (1/n) * Σ[f(perplexity(s_i | s_{<i}))]
 where f(p) = 1 - exp(-β * p), β = 1.0
 ```
 
@@ -105,9 +105,9 @@ where f(p) = 1 - exp(-β * p), β = 1.0
 
 ## Conclusion
 
-TAP uncertainty quantification provides a **theoretically principled** and **empirically validated** approach to uncertainty estimation in large language models. With **60% improvement in calibration** over standard methods and **competitive computational efficiency**, TAP enables safer deployment of current token-based architectures.
+PBA uncertainty quantification provides a **theoretically principled** and **empirically validated** approach to uncertainty estimation in large language models. With **60% improvement in calibration** over standard methods and **competitive computational efficiency**, PBA enables safer deployment of current token-based architectures.
 
-The method's **information-theoretic grounding** eliminates arbitrary thresholds while providing uncertainty estimates **intrinsically calibrated** to training data coverage. Cross-validation results demonstrate **robust performance** across diverse scenarios, supporting the theoretical claims about TAP's advantages.
+The method's **information-theoretic grounding** eliminates arbitrary thresholds while providing uncertainty estimates **intrinsically calibrated** to training data coverage. Cross-validation results demonstrate **robust performance** across diverse scenarios, supporting the theoretical claims about PBA's advantages.
 
 ---
 

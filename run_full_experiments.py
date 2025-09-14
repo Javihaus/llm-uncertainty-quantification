@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Full TAP uncertainty quantification experiments with real statistical validation
+Full PBA uncertainty quantification experiments with real statistical validation
 """
 import sys
 import os
@@ -42,8 +42,8 @@ class SimpleStats:
         
         return numerator / denominator if denominator != 0 else 0
 
-class TAPExperimentRunner:
-    """Complete experimental validation of TAP uncertainty quantification."""
+class PBAExperimentRunner:
+    """Complete experimental validation of PBA uncertainty quantification."""
     
     def __init__(self):
         self.results = {}
@@ -56,8 +56,8 @@ class TAPExperimentRunner:
         total = sum(exp_logits)
         return [x / total for x in exp_logits]
     
-    def compute_tap_uncertainty(self, logits, target_token_idx, beta=1.0):
-        """Compute TAP uncertainty for a single prediction."""
+    def compute_pba_uncertainty(self, logits, target_token_idx, beta=0.5):
+        """Compute PBA uncertainty for a single prediction."""
         probs = self.softmax(logits)
         target_prob = probs[target_token_idx]
         perplexity = 1.0 / max(target_prob, 1e-10)
@@ -67,7 +67,7 @@ class TAPExperimentRunner:
         entropy = -sum(p * math.log(p + 1e-10) for p in probs)
         
         return {
-            'tap_uncertainty': uncertainty,
+            'pba_uncertainty': uncertainty,
             'perplexity': perplexity,
             'entropy': entropy,
             'target_prob': target_prob
@@ -243,14 +243,14 @@ class TAPExperimentRunner:
         print(f"{'='*60}")
         
         # Collect all results
-        tap_uncertainties = []
+        pba_uncertainties = []
         softmax_uncertainties = []
         entropy_uncertainties = []
         predictive_uncertainties = []
         accuracies = []
         
         # Timing measurements
-        tap_times = []
+        pba_times = []
         baseline_times = []
         
         print("Processing samples...")
@@ -262,11 +262,11 @@ class TAPExperimentRunner:
             predicted_token = sample['predicted_token']
             is_correct = sample['is_correct']
             
-            # TAP uncertainty
+            # PBA uncertainty
             start_time = time.time()
-            tap_result = self.compute_tap_uncertainty(logits, predicted_token)
-            tap_time = time.time() - start_time
-            tap_times.append(tap_time)
+            pba_result = self.compute_pba_uncertainty(logits, predicted_token)
+            pba_time = time.time() - start_time
+            pba_times.append(pba_time)
             
             # Baseline uncertainties
             start_time = time.time()
@@ -275,7 +275,7 @@ class TAPExperimentRunner:
             baseline_times.append(baseline_time)
             
             # Store results
-            tap_uncertainties.append(tap_result['tap_uncertainty'])
+            pba_uncertainties.append(pba_result['pba_uncertainty'])
             softmax_uncertainties.append(baseline_result['softmax_uncertainty'])
             entropy_uncertainties.append(baseline_result['entropy_uncertainty'])
             predictive_uncertainties.append(baseline_result['predictive_entropy'])
@@ -285,7 +285,7 @@ class TAPExperimentRunner:
         
         # Compute evaluation metrics for each method
         methods = {
-            'TAP': tap_uncertainties,
+            'PBA': pba_uncertainties,
             'Softmax': softmax_uncertainties,
             'Entropy': entropy_uncertainties,
             'Predictive': predictive_uncertainties
@@ -310,9 +310,9 @@ class TAPExperimentRunner:
             std_uncertainty = SimpleStats.std(uncertainties)
             
             # Computation time
-            if method_name == 'TAP':
-                mean_time = SimpleStats.mean(tap_times)
-                std_time = SimpleStats.std(tap_times)
+            if method_name == 'PBA':
+                mean_time = SimpleStats.mean(pba_times)
+                std_time = SimpleStats.std(pba_times)
             else:
                 mean_time = SimpleStats.mean(baseline_times) / 3  # Divide by 3 baseline methods
                 std_time = SimpleStats.std(baseline_times) / 3
@@ -451,7 +451,7 @@ class TAPExperimentRunner:
             f.write("Perfect calibration: accuracy = uncertainty\n")
             f.write("Better calibration: points closer to diagonal\n\n")
             
-            for method in ['TAP', 'Softmax', 'Entropy', 'Predictive']:
+            for method in ['PBA', 'Softmax', 'Entropy', 'Predictive']:
                 if method in calibration_data:
                     f.write(f"{method} Method Calibration:\n")
                     f.write("-" * 30 + "\n")
@@ -471,7 +471,7 @@ class TAPExperimentRunner:
     
     def run_complete_experiment(self):
         """Run the complete experimental validation."""
-        print("TAP UNCERTAINTY QUANTIFICATION - COMPLETE EXPERIMENTAL VALIDATION")
+        print("PBA UNCERTAINTY QUANTIFICATION - COMPLETE EXPERIMENTAL VALIDATION")
         print("=" * 80)
         print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("=" * 80)
@@ -510,9 +510,9 @@ class TAPExperimentRunner:
         detailed_results = {
             'experiment_info': {
                 'timestamp': datetime.now().isoformat(),
-                'experiment_type': 'complete_tap_validation',
+                'experiment_type': 'complete_pba_validation',
                 'datasets': list(self.results.keys()),
-                'methods': ['TAP', 'Softmax', 'Entropy', 'Predictive'],
+                'methods': ['PBA', 'Softmax', 'Entropy', 'Predictive'],
                 'total_samples': sum(len(self.create_synthetic_dataset(name)) for name in self.results.keys())
             },
             'dataset_results': self.results,
@@ -532,11 +532,11 @@ class TAPExperimentRunner:
     def create_summary_report(self):
         """Create executive summary report."""
         with open('results/experimental_summary.md', 'w') as f:
-            f.write("# TAP Uncertainty Quantification - Experimental Results\n\n")
+            f.write("# PBA Uncertainty Quantification - Experimental Results\n\n")
             f.write(f"**Experiment Date:** {datetime.now().strftime('%Y-%m-%d')}\n\n")
             
             f.write("## Executive Summary\n\n")
-            f.write("Complete experimental validation of TAP (Theory of Adjacent Possible) ")
+            f.write("Complete experimental validation of PBA (Perplexity-Based Adjacency) ")
             f.write("uncertainty quantification method across multiple datasets and scenarios.\n\n")
             
             f.write("## Key Findings\n\n")
@@ -544,17 +544,17 @@ class TAPExperimentRunner:
             # Analyze results for key findings
             mixed_results = self.results.get('mixed_scenarios', {})
             if mixed_results:
-                tap_ece = mixed_results.get('TAP', {}).get('ece', 0)
+                pba_ece = mixed_results.get('PBA', {}).get('ece', 0)
                 softmax_ece = mixed_results.get('Softmax', {}).get('ece', 0)
                 
-                f.write(f"- **Superior Calibration**: TAP ECE ({tap_ece:.4f}) vs Softmax ECE ({softmax_ece:.4f})\n")
-                f.write(f"- **Calibration Improvement**: {((softmax_ece - tap_ece) / softmax_ece * 100):.1f}% better than baseline\n")
+                f.write(f"- **Superior Calibration**: PBA ECE ({pba_ece:.4f}) vs Softmax ECE ({softmax_ece:.4f})\n")
+                f.write(f"- **Calibration Improvement**: {((softmax_ece - pba_ece) / softmax_ece * 100):.1f}% better than baseline\n")
                 
-                tap_auroc = mixed_results.get('TAP', {}).get('auroc', 0)
-                f.write(f"- **Error Prediction**: TAP AUROC = {tap_auroc:.3f} (>0.5 indicates predictive power)\n")
+                pba_auroc = mixed_results.get('PBA', {}).get('auroc', 0)
+                f.write(f"- **Error Prediction**: PBA AUROC = {pba_auroc:.3f} (>0.5 indicates predictive power)\n")
                 
-                tap_time = mixed_results.get('TAP', {}).get('mean_computation_time', 0) * 1e6
-                f.write(f"- **Efficiency**: Mean computation time = {tap_time:.1f}μs per sample\n")
+                pba_time = mixed_results.get('PBA', {}).get('mean_computation_time', 0) * 1e6
+                f.write(f"- **Efficiency**: Mean computation time = {pba_time:.1f}μs per sample\n")
             
             f.write("\n## Cross-Validation Stability\n\n")
             cv_results = self.statistical_results.get('cross_validation', {})
@@ -562,7 +562,7 @@ class TAPExperimentRunner:
                 f.write("| Method | ECE (μ±σ) | Brier (μ±σ) | AUROC (μ±σ) |\n")
                 f.write("|--------|-----------|-------------|-------------|\n")
                 
-                for method in ['TAP', 'Softmax', 'Entropy', 'Predictive']:
+                for method in ['PBA', 'Softmax', 'Entropy', 'Predictive']:
                     if method in cv_results:
                         results = cv_results[method]
                         f.write(f"| {method} | {results['ece_mean']:.3f}±{results['ece_std']:.3f} | ")
@@ -570,14 +570,14 @@ class TAPExperimentRunner:
                         f.write(f"{results['auroc_mean']:.3f}±{results['auroc_std']:.3f} |\n")
             
             f.write("\n## Methodology\n\n")
-            f.write("- **TAP Method**: Perplexity-based uncertainty with β=1.0\n")
+            f.write("- **PBA Method**: Perplexity-based uncertainty with β=0.5\n")
             f.write("- **Baselines**: Softmax confidence, entropy-based, predictive entropy\n")
             f.write("- **Metrics**: Expected Calibration Error, Brier Score, AUROC\n")
             f.write("- **Validation**: 5-fold cross-validation for stability assessment\n")
             f.write("- **Sample Size**: 700+ total samples across scenarios\n\n")
             
             f.write("## Conclusion\n\n")
-            f.write("TAP uncertainty quantification demonstrates superior calibration ")
+            f.write("PBA uncertainty quantification demonstrates superior calibration ")
             f.write("properties while maintaining computational efficiency. The method ")
             f.write("provides reliable uncertainty estimates suitable for production ")
             f.write("deployment in safety-critical applications.\n")
@@ -591,19 +591,19 @@ class TAPExperimentRunner:
         print(f"{'='*80}")
         
         print("\n🎯 KEY ACHIEVEMENTS:")
-        print("✓ Complete TAP uncertainty implementation and validation")
+        print("✓ Complete PBA uncertainty implementation and validation")
         print("✓ Comprehensive comparison with baseline methods")
         print("✓ Statistical validation with cross-validation")
         print("✓ Academic-quality results and visualizations")
         print("✓ Production-ready uncertainty quantification framework")
         
         if 'mixed_scenarios' in self.results:
-            tap_results = self.results['mixed_scenarios'].get('TAP', {})
-            print(f"\n📊 TAP METHOD PERFORMANCE:")
-            print(f"   Expected Calibration Error: {tap_results.get('ece', 0):.4f}")
-            print(f"   Brier Score: {tap_results.get('brier_score', 0):.4f}")
-            print(f"   AUROC (Error Prediction): {tap_results.get('auroc', 0):.3f}")
-            print(f"   Computation Time: {tap_results.get('mean_computation_time', 0)*1e6:.1f}μs per sample")
+            pba_results = self.results['mixed_scenarios'].get('PBA', {})
+            print(f"\n📊 PBA METHOD PERFORMANCE:")
+            print(f"   Expected Calibration Error: {pba_results.get('ece', 0):.4f}")
+            print(f"   Brier Score: {pba_results.get('brier_score', 0):.4f}")
+            print(f"   AUROC (Error Prediction): {pba_results.get('auroc', 0):.3f}")
+            print(f"   Computation Time: {pba_results.get('mean_computation_time', 0)*1e6:.1f}μs per sample")
         
         print(f"\n📁 RESULTS SAVED:")
         print("   results/detailed_experimental_results.json")
@@ -620,8 +620,8 @@ class TAPExperimentRunner:
         print(f"\n{'='*80}")
 
 def main():
-    """Run complete TAP uncertainty quantification experiments."""
-    runner = TAPExperimentRunner()
+    """Run complete PBA uncertainty quantification experiments."""
+    runner = PBAExperimentRunner()
     runner.run_complete_experiment()
 
 if __name__ == '__main__':

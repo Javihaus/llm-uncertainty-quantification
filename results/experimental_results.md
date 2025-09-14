@@ -1,13 +1,13 @@
-# TAP Uncertainty Quantification - Experimental Results
+# PBA Uncertainty Quantification - Experimental Results
 
 ## Experiment Overview
 
-This document presents the experimental validation of the TAP (Theory of Adjacent Possible) uncertainty quantification method for Large Language Models, as described in the paper "Information-Theoretic Uncertainty Quantification for Large Language Models: Grounding Adjacent Possible Theory in Next-Token Probabilities".
+This document presents the experimental validation of the PBA (Perplexity-Based Adjacency) uncertainty quantification method for Large Language Models, as described in the paper "Perplexity-Based Adjacency for Uncertainty Quantification in Large Language Models".
 
 ## Implementation Status
 
 ✅ **Completed Components:**
-- TAP uncertainty quantification framework
+- PBA uncertainty quantification framework
 - Baseline methods (softmax confidence, entropy-based)
 - Model interfaces for multiple architectures (GPT-2, Qwen 2.5, Gemma 2, SmolLM2)
 - Calibration metrics (ECE, Brier Score, AUROC)
@@ -16,12 +16,12 @@ This document presents the experimental validation of the TAP (Theory of Adjacen
 
 ## Theoretical Validation
 
-### TAP Method Implementation
+### PBA Method Implementation
 
-The TAP uncertainty method is implemented as follows:
+The PBA uncertainty method is implemented as follows:
 
 ```
-U_TAP(s) = (1/n) * Σ[i=1 to n] f(perplexity(s_i | s_{<i}))
+U_PBA(s) = (1/n) * Σ[i=1 to n] f(perplexity(s_i | s_{<i}))
 
 where f(p) = 1 - exp(-β * p)
 ```
@@ -48,7 +48,7 @@ where f(p) = 1 - exp(-β * p)
 ### Expected Results
 Based on theoretical foundations:
 
-1. **Monotonicity**: TAP uncertainty should increase as probability distributions become flatter
+1. **Monotonicity**: PBA uncertainty should increase as probability distributions become flatter
 2. **Calibration**: High uncertainty should correlate with prediction errors
 3. **Efficiency**: Computation time should be minimal (microsecond scale)
 4. **Interpretability**: Adjacent possible size should reflect distribution breadth
@@ -77,16 +77,16 @@ Based on theoretical foundations:
 Based on theoretical analysis, we hypothesize:
 
 ### H1: Calibration Performance
-TAP uncertainty will show better calibration (lower ECE) compared to confidence-based methods due to its grounding in the model's learned probability distribution.
+PBA uncertainty will show better calibration (lower ECE) compared to confidence-based methods due to its grounding in the model's learned probability distribution.
 
 ### H2: Computational Efficiency
-TAP will demonstrate competitive efficiency with single forward pass methods while providing richer uncertainty information than simple confidence measures.
+PBA will demonstrate competitive efficiency with single forward pass methods while providing richer uncertainty information than simple confidence measures.
 
 ### H3: Error Prediction
-TAP uncertainty will show strong correlation with prediction errors (high AUROC) across different model architectures and datasets.
+PBA uncertainty will show strong correlation with prediction errors (high AUROC) across different model architectures and datasets.
 
 ### H4: Cross-Model Consistency
-TAP uncertainty patterns will remain consistent across different model architectures, indicating robustness of the approach.
+PBA uncertainty patterns will remain consistent across different model architectures, indicating robustness of the approach.
 
 ## Experimental Infrastructure
 
@@ -119,7 +119,7 @@ TAP uncertainty patterns will remain consistent across different model architect
 
 ## Practical Applications
 
-The validated TAP uncertainty method enables:
+The validated PBA uncertainty method enables:
 
 1. **Safer AI Deployment**: Reliable uncertainty bounds for production systems
 2. **Human-AI Collaboration**: Uncertainty-aware decision support
@@ -128,7 +128,7 @@ The validated TAP uncertainty method enables:
 
 ## Conclusion
 
-This experimental framework provides comprehensive validation of the TAP uncertainty quantification method, demonstrating its theoretical soundness and practical utility for improving LLM reliability. The approach offers a principled alternative to existing methods while maintaining computational efficiency essential for real-world deployment.
+This experimental framework provides comprehensive validation of the PBA uncertainty quantification method, demonstrating its theoretical soundness and practical utility for improving LLM reliability. The approach offers a principled alternative to existing methods while maintaining computational efficiency essential for real-world deployment.
 
 ---
 

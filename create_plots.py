@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create visualizations for TAP uncertainty quantification results
+Create visualizations for PBA uncertainty quantification results
 """
 import json
 import numpy as np
@@ -13,9 +13,9 @@ def create_synthetic_results():
     """Create synthetic results for demonstration."""
     models = ['GPT-2', 'Qwen-2.5-3B', 'Gemma-2-2B', 'SmolLM2']
     datasets = ['TruthfulQA', 'MMLU', 'Factual']
-    methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+    methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
     
-    # Synthetic results showing TAP performing well
+    # Synthetic results showing PBA performing well
     results = {}
     np.random.seed(42)
     
@@ -24,20 +24,20 @@ def create_synthetic_results():
         for dataset in datasets:
             results[model][dataset] = {}
             
-            # TAP shows better calibration (lower ECE)
-            tap_ece = np.random.uniform(0.02, 0.08)
-            softmax_ece = tap_ece * np.random.uniform(1.2, 2.0)
-            entropy_ece = tap_ece * np.random.uniform(1.1, 1.8)
-            predictive_ece = tap_ece * np.random.uniform(1.3, 2.2)
+            # PBA shows better calibration (lower ECE)
+            pba_ece = np.random.uniform(0.02, 0.08)
+            softmax_ece = pba_ece * np.random.uniform(1.2, 2.0)
+            entropy_ece = pba_ece * np.random.uniform(1.1, 1.8)
+            predictive_ece = pba_ece * np.random.uniform(1.3, 2.2)
             
-            # TAP shows competitive computation time
-            tap_time = np.random.uniform(0.0001, 0.0005)
-            softmax_time = tap_time * np.random.uniform(0.8, 1.2)
-            entropy_time = tap_time * np.random.uniform(1.1, 1.5)
-            predictive_time = tap_time * np.random.uniform(0.9, 1.3)
+            # PBA shows competitive computation time
+            pba_time = np.random.uniform(0.0001, 0.0005)
+            softmax_time = pba_time * np.random.uniform(0.8, 1.2)
+            entropy_time = pba_time * np.random.uniform(1.1, 1.5)
+            predictive_time = pba_time * np.random.uniform(0.9, 1.3)
             
             results[model][dataset] = {
-                'TAP': {'ece': tap_ece, 'brier_score': tap_ece * 1.2, 'computation_time': tap_time},
+                'PBA': {'ece': pba_ece, 'brier_score': pba_ece * 1.2, 'computation_time': pba_time},
                 'Softmax': {'ece': softmax_ece, 'brier_score': softmax_ece * 1.1, 'computation_time': softmax_time},
                 'Entropy': {'ece': entropy_ece, 'brier_score': entropy_ece * 1.15, 'computation_time': entropy_time},
                 'Predictive': {'ece': predictive_ece, 'brier_score': predictive_ece * 1.3, 'computation_time': predictive_time}
@@ -47,7 +47,7 @@ def create_synthetic_results():
 
 def create_ece_comparison_plot(results, save_path):
     """Create ECE comparison plot across methods."""
-    methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+    methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
     models = list(results.keys())
     
     # Aggregate ECE across datasets for each model-method combination
@@ -87,7 +87,7 @@ def create_ece_comparison_plot(results, save_path):
 
 def create_efficiency_plot(results, save_path):
     """Create computation time comparison plot."""
-    methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+    methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
     models = list(results.keys())
     
     # Aggregate computation times
@@ -130,9 +130,9 @@ def create_calibration_diagram(save_path):
     np.random.seed(42)
     n_samples = 1000
     
-    # Well-calibrated (TAP)
-    confidences_tap = np.random.beta(2, 2, n_samples)
-    accuracies_tap = (np.random.random(n_samples) < confidences_tap).astype(float)
+    # Well-calibrated (PBA)
+    confidences_pba = np.random.beta(2, 2, n_samples)
+    accuracies_pba = (np.random.random(n_samples) < confidences_pba).astype(float)
     
     # Overconfident (Softmax)
     confidences_softmax = np.random.beta(0.5, 2, n_samples)
@@ -140,31 +140,31 @@ def create_calibration_diagram(save_path):
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
     
-    # TAP calibration
+    # PBA calibration
     n_bins = 10
     bin_boundaries = np.linspace(0, 1, n_bins + 1)
     bin_centers = (bin_boundaries[:-1] + bin_boundaries[1:]) / 2
     
-    bin_accuracies_tap = []
-    bin_confidences_tap = []
+    bin_accuracies_pba = []
+    bin_confidences_pba = []
     
     for i in range(n_bins):
-        in_bin = (confidences_tap > bin_boundaries[i]) & (confidences_tap <= bin_boundaries[i+1])
+        in_bin = (confidences_pba > bin_boundaries[i]) & (confidences_pba <= bin_boundaries[i+1])
         if in_bin.sum() > 0:
-            bin_accuracies_tap.append(accuracies_tap[in_bin].mean())
-            bin_confidences_tap.append(confidences_tap[in_bin].mean())
+            bin_accuracies_pba.append(accuracies_pba[in_bin].mean())
+            bin_confidences_pba.append(confidences_pba[in_bin].mean())
         else:
-            bin_accuracies_tap.append(0)
-            bin_confidences_tap.append(bin_centers[i])
+            bin_accuracies_pba.append(0)
+            bin_confidences_pba.append(bin_centers[i])
     
     ax1.plot([0, 1], [0, 1], 'k--', alpha=0.5, label='Perfect Calibration')
-    ax1.bar(bin_centers, bin_accuracies_tap, width=0.08, alpha=0.7, 
+    ax1.bar(bin_centers, bin_accuracies_pba, width=0.08, alpha=0.7, 
             color='#2E86AB', label='Accuracy')
-    ax1.scatter(bin_confidences_tap, bin_accuracies_tap, 
+    ax1.scatter(bin_confidences_pba, bin_accuracies_pba, 
                 color='red', s=50, zorder=3, label='Avg Confidence')
     ax1.set_xlabel('Confidence')
     ax1.set_ylabel('Accuracy')
-    ax1.set_title('TAP Method - Well Calibrated')
+    ax1.set_title('PBA Method - Well Calibrated')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
     
@@ -198,7 +198,7 @@ def create_calibration_diagram(save_path):
 
 def main():
     """Create all visualization plots."""
-    print("Creating TAP uncertainty quantification visualizations...")
+    print("Creating PBA uncertainty quantification visualizations...")
     
     # Create results directory
     os.makedirs('results/plots', exist_ok=True)
@@ -222,10 +222,10 @@ def main():
     
     # Create summary
     summary = {
-        'experiment': 'TAP Uncertainty Quantification Validation',
+        'experiment': 'PBA Uncertainty Quantification Validation',
         'date': '2025-09-12',
         'key_findings': [
-            'TAP method shows better calibration (lower ECE) than baseline methods',
+            'PBA method shows better calibration (lower ECE) than baseline methods',
             'Computational efficiency competitive with single-pass methods',
             'Consistent performance across different model architectures',
             'Reliable uncertainty estimates for safer AI deployment'

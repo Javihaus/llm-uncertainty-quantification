@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive parameter sensitivity experiments for TAP uncertainty quantification.
+Comprehensive parameter sensitivity experiments for PBA uncertainty quantification.
 Experiments 1-5: α and β parameter optimization and robustness testing.
 """
 import sys
@@ -175,8 +175,8 @@ class ParameterSensitivityExperiments:
         
         return models
     
-    def compute_tap_uncertainty(self, logits, alpha, beta):
-        """Compute TAP uncertainty with given parameters."""
+    def compute_pba_uncertainty(self, logits, alpha, beta):
+        """Compute PBA uncertainty with given parameters."""
         # Convert to probabilities
         def stable_softmax(x):
             exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))
@@ -188,9 +188,9 @@ class ParameterSensitivityExperiments:
         target_idx = np.argmax(probs[0])
         target_prob = probs[0, target_idx]
         
-        # TAP uncertainty
+        # PBA uncertainty
         perplexity = 1.0 / max(target_prob, 1e-10)
-        tap_uncertainty = 1.0 - np.exp(-beta * perplexity)
+        pba_uncertainty = 1.0 - np.exp(-beta * perplexity)
         
         # Adjacent possible size
         sorted_probs = np.sort(probs[0])[::-1]
@@ -201,7 +201,7 @@ class ParameterSensitivityExperiments:
         entropy = -np.sum(probs[0] * np.log(probs[0] + 1e-10))
         
         return {
-            'tap_uncertainty': tap_uncertainty,
+            'pba_uncertainty': pba_uncertainty,
             'perplexity': perplexity,
             'adjacent_possible_size': adjacent_size,
             'entropy': entropy,
@@ -303,10 +303,10 @@ class ParameterSensitivityExperiments:
                             # Process subset of data for efficiency
                             for item in dataset[:200]:  # Use first 200 samples
                                 logits = model.get_logits(item, seed)
-                                uncertainty_data = self.compute_tap_uncertainty(logits, alpha, beta)
+                                uncertainty_data = self.compute_pba_uncertainty(logits, alpha, beta)
                                 accuracy = self.evaluate_accuracy(item, model_name, seed)
-                                
-                                uncertainties.append(uncertainty_data['tap_uncertainty'])
+
+                                uncertainties.append(uncertainty_data['pba_uncertainty'])
                                 accuracies.append(accuracy)
                             
                             uncertainties = np.array(uncertainties)
@@ -501,7 +501,7 @@ class ParameterSensitivityExperiments:
                 # Test a few alternative parameter combinations for model-specific optimization
                 test_params = [
                     (alpha_opt, beta_opt),  # Transferred
-                    (0.9, 1.0),  # Default alternative
+                    (0.9, 0.5),  # Default alternative
                     (0.85, 1.5),  # Conservative alternative
                     (0.95, 0.7)   # Aggressive alternative
                 ]
@@ -512,10 +512,10 @@ class ParameterSensitivityExperiments:
                     
                     for item in dataset:
                         logits = model.get_logits(item, seed)
-                        uncertainty_data = self.compute_tap_uncertainty(logits, test_alpha, test_beta)
+                        uncertainty_data = self.compute_pba_uncertainty(logits, test_alpha, test_beta)
                         accuracy = self.evaluate_accuracy(item, target_model, seed)
-                        
-                        uncertainties_test.append(uncertainty_data['tap_uncertainty'])
+
+                        uncertainties_test.append(uncertainty_data['pba_uncertainty'])
                         accuracies_test.append(accuracy)
                     
                     ece_test = self.compute_ece(np.array(uncertainties_test), np.array(accuracies_test))
@@ -643,10 +643,10 @@ class ParameterSensitivityExperiments:
                         
                         for item in dataset:
                             logits = model.get_logits(item, seed)
-                            uncertainty_data = self.compute_tap_uncertainty(logits, alpha, beta)
+                            uncertainty_data = self.compute_pba_uncertainty(logits, alpha, beta)
                             accuracy = self.evaluate_accuracy(item, test_model, seed)
-                            
-                            uncertainties.append(uncertainty_data['tap_uncertainty'])
+
+                            uncertainties.append(uncertainty_data['pba_uncertainty'])
                             accuracies.append(accuracy)
                         
                         ece = self.compute_ece(np.array(uncertainties), np.array(accuracies))

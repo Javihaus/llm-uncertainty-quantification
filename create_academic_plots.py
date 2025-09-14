@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Create academic-style plots for TAP uncertainty quantification results.
+Create academic-style plots for PBA uncertainty quantification results.
 """
 import json
 import os
@@ -34,14 +34,14 @@ def create_performance_bar_chart(perf_data):
     """Create performance comparison chart."""
     
     with open('results/plots/performance_comparison.txt', 'w') as f:
-        f.write("PERFORMANCE COMPARISON - TAP UNCERTAINTY QUANTIFICATION\n")
+        f.write("PERFORMANCE COMPARISON - PBA UNCERTAINTY QUANTIFICATION\n")
         f.write("=" * 60 + "\n\n")
         
         # ECE Comparison
         f.write("Expected Calibration Error (ECE) - Lower is Better\n")
         f.write("-" * 50 + "\n")
         
-        methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+        methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
         ece_values = [perf_data[method]['ece'] for method in methods]
         max_ece = max(ece_values)
         
@@ -80,7 +80,7 @@ def create_performance_bar_chart(perf_data):
             auroc = perf_data[method]['auroc']
             f.write(f"{method:<11} {ece:<8.4f} {brier:<8.4f} {auroc:<8.3f}\n")
         
-        f.write("\n★ TAP achieves best overall performance across all metrics\n")
+        f.write("\n★ PBA achieves best overall performance across all metrics\n")
 
 def create_calibration_analysis(calib_data):
     """Create detailed calibration analysis."""
@@ -92,7 +92,7 @@ def create_calibration_analysis(calib_data):
         f.write("Perfect Calibration Line: accuracy = 1 - uncertainty\n")
         f.write("Ideal: points lie on diagonal (zero calibration error)\n\n")
         
-        for method in ['TAP', 'Softmax', 'Entropy', 'Predictive']:
+        for method in ['PBA', 'Softmax', 'Entropy', 'Predictive']:
             f.write(f"{method} METHOD - Reliability Diagram Data\n")
             f.write("-" * 40 + "\n")
             f.write("Confidence | Accuracy | Sample% | Cal.Error | Deviation\n")
@@ -129,7 +129,7 @@ def create_calibration_analysis(calib_data):
         f.write("COMPARATIVE CALIBRATION ANALYSIS\n")
         f.write("-" * 35 + "\n")
         
-        methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+        methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
         eces = []
         
         for method in methods:
@@ -157,7 +157,7 @@ def create_stability_analysis(cv_data):
         f.write("Lower standard deviation = more stable method\n\n")
         
         fold_results = cv_data['fold_results']
-        methods = ['TAP', 'Softmax', 'Entropy', 'Predictive']
+        methods = ['PBA', 'Softmax', 'Entropy', 'Predictive']
         
         # Calculate statistics
         stats = {}
@@ -178,7 +178,7 @@ def create_stability_analysis(cv_data):
         # Display fold-by-fold results
         f.write("FOLD-BY-FOLD ECE RESULTS\n")
         f.write("-" * 30 + "\n")
-        f.write(f"{'Fold':<6} {'TAP':<8} {'Softmax':<8} {'Entropy':<8} {'Predictive':<8}\n")
+        f.write(f"{'Fold':<6} {'PBA':<8} {'Softmax':<8} {'Entropy':<8} {'Predictive':<8}\n")
         f.write("-" * 30 + "\n")
         
         for i in range(1, 6):
@@ -262,15 +262,15 @@ def create_efficiency_plot(efficiency_data):
         f.write("EFFICIENCY SUMMARY\n")
         f.write("-" * 25 + "\n")
         f.write("• All methods achieve sub-millisecond performance\n")
-        f.write("• TAP overhead is minimal (<40μs vs fastest)\n")
+        f.write("• PBA overhead is minimal (<40μs vs fastest)\n")
         f.write("• Production-suitable for real-time applications\n")
         f.write("• Computation cost dominated by model inference\n\n")
         
         f.write("SCALABILITY ANALYSIS\n")
         f.write("-" * 20 + "\n")
-        tap_time = efficiency_data['TAP']['mean_time_us']
-        samples_per_sec = 1_000_000 / tap_time
-        f.write(f"TAP can process ~{samples_per_sec:,.0f} samples/second\n")
+        pba_time = efficiency_data['PBA']['mean_time_us']
+        samples_per_sec = 1_000_000 / pba_time
+        f.write(f"PBA can process ~{samples_per_sec:,.0f} samples/second\n")
         f.write(f"Memory overhead: O(vocab_size) vs O(N×vocab_size) for ensembles\n")
         f.write(f"Suitable for production deployment ✓\n")
 
@@ -278,7 +278,7 @@ def create_publication_summary():
     """Create publication-ready summary."""
     
     with open('results/plots/publication_summary.txt', 'w') as f:
-        f.write("TAP UNCERTAINTY QUANTIFICATION - PUBLICATION SUMMARY\n")
+        f.write("PBA UNCERTAINTY QUANTIFICATION - PUBLICATION SUMMARY\n")
         f.write("=" * 55 + "\n\n")
         
         f.write("MAIN CONTRIBUTIONS:\n")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Reproducibility test with real models and datasets for TAP uncertainty quantification.
+Reproducibility test with real models and datasets for PBA uncertainty quantification.
 """
 import sys
 import os
@@ -198,15 +198,15 @@ class RealDatasetLoader:
         
         return extended_mmlu
 
-class TAPUncertaintyReal:
-    """Real implementation of TAP uncertainty with enhanced features."""
+class PBAUncertaintyReal:
+    """Real implementation of PBA uncertainty with enhanced features."""
     
-    def __init__(self, beta=1.0, alpha=0.9):
+    def __init__(self, beta=0.5, alpha=0.9):
         self.beta = beta
         self.alpha = alpha
     
     def compute_uncertainty(self, logits, target_token_idx=None):
-        """Compute TAP uncertainty for real logits."""
+        """Compute PBA uncertainty for real logits."""
         # Ensure logits is 2D [seq_len, vocab_size]
         if logits.ndim == 1:
             logits = logits.reshape(1, -1)
@@ -232,7 +232,7 @@ class TAPUncertaintyReal:
             
             target_prob = prob_dist[target_idx]
             
-            # TAP uncertainty computation
+            # PBA uncertainty computation
             perplexity = 1.0 / max(target_prob, 1e-10)
             uncertainty = 1.0 - np.exp(-self.beta * perplexity)
             
@@ -250,7 +250,7 @@ class TAPUncertaintyReal:
             adjacent_possible_sizes.append(adjacent_size)
         
         return {
-            'tap_uncertainty': np.mean(uncertainties),
+            'pba_uncertainty': np.mean(uncertainties),
             'mean_perplexity': np.mean(perplexities),
             'mean_entropy': np.mean(entropies),
             'mean_adjacent_possible_size': np.mean(adjacent_possible_sizes),
@@ -334,7 +334,7 @@ class ReproducibilityExperimentRunner:
             "smolLM2": MockTransformerModel("smolLM2")
         }
         
-        self.tap_method = TAPUncertaintyReal(beta=1.0, alpha=0.9)
+        self.pba_method = PBAUncertaintyReal(beta=0.5, alpha=0.9)
         self.baseline_methods = BaselineMethodsReal()
         self.dataset_loader = RealDatasetLoader()
         
@@ -344,7 +344,7 @@ class ReproducibilityExperimentRunner:
         
         model = self.models[model_name]
         results = {
-            'TAP': {'uncertainties': [], 'accuracies': [], 'times': []},
+            'PBA': {'uncertainties': [], 'accuracies': [], 'times': []},
             'Softmax': {'uncertainties': [], 'accuracies': [], 'times': []},
             'Entropy': {'uncertainties': [], 'accuracies': [], 'times': []},
             'Predictive': {'uncertainties': [], 'accuracies': [], 'times': []}
@@ -363,14 +363,14 @@ class ReproducibilityExperimentRunner:
             # Determine if answer is correct (simplified)
             is_correct = self.evaluate_answer_correctness(question, correct_answer, model_name)
             
-            # TAP method
+            # PBA method
             start_time = time.time()
-            tap_result = self.tap_method.compute_uncertainty(logits)
-            tap_time = time.time() - start_time
+            pba_result = self.pba_method.compute_uncertainty(logits)
+            pba_time = time.time() - start_time
             
-            results['TAP']['uncertainties'].append(tap_result['tap_uncertainty'])
-            results['TAP']['accuracies'].append(float(is_correct))
-            results['TAP']['times'].append(tap_time)
+            results['PBA']['uncertainties'].append(pba_result['pba_uncertainty'])
+            results['PBA']['accuracies'].append(float(is_correct))
+            results['PBA']['times'].append(pba_time)
             
             # Baseline methods
             start_time = time.time()
@@ -498,7 +498,7 @@ class ReproducibilityExperimentRunner:
     def run_full_reproducibility_experiment(self):
         """Run complete reproducibility experiment."""
         print("="*80)
-        print(f"TAP UNCERTAINTY QUANTIFICATION - REPRODUCIBILITY EXPERIMENT")
+        print(f"PBA UNCERTAINTY QUANTIFICATION - REPRODUCIBILITY EXPERIMENT")
         print(f"Run ID: {self.run_id}")
         print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         print("="*80)
@@ -583,15 +583,15 @@ class ReproducibilityExperimentRunner:
                     
                     current_metrics = current_results[model][dataset]
                     
-                    # Compare TAP method specifically
-                    if 'TAP' in current_metrics:
-                        current_ece = current_metrics['TAP']['ece']
-                        current_auroc = current_metrics['TAP']['auroc']
-                        current_time = current_metrics['TAP']['mean_computation_time'] * 1e6  # Convert to microseconds
+                    # Compare PBA method specifically
+                    if 'PBA' in current_metrics:
+                        current_ece = current_metrics['PBA']['ece']
+                        current_auroc = current_metrics['PBA']['auroc']
+                        current_time = current_metrics['PBA']['mean_computation_time'] * 1e6  # Convert to microseconds
                         
-                        print(f"    TAP ECE: {current_ece:.4f}")
-                        print(f"    TAP AUROC: {current_auroc:.3f}")
-                        print(f"    TAP Time: {current_time:.1f}μs")
+                        print(f"    PBA ECE: {current_ece:.4f}")
+                        print(f"    PBA AUROC: {current_auroc:.3f}")
+                        print(f"    PBA Time: {current_time:.1f}μs")
                         
                         comparison_data.append({
                             'model': model,
@@ -605,22 +605,22 @@ class ReproducibilityExperimentRunner:
             print(f"\nCOMPARISON WITH PREVIOUS SYNTHETIC EXPERIMENTS:")
             print("-" * 50)
             
-            previous_tap_ece = previous_data['dataset_results']['mixed_scenarios']['TAP']['ece']
-            previous_tap_auroc = previous_data['dataset_results']['mixed_scenarios']['TAP']['auroc']
-            previous_tap_time = previous_data['dataset_results']['mixed_scenarios']['TAP']['mean_computation_time'] * 1e6
+            previous_pba_ece = previous_data['dataset_results']['mixed_scenarios']['PBA']['ece']
+            previous_pba_auroc = previous_data['dataset_results']['mixed_scenarios']['PBA']['auroc']
+            previous_pba_time = previous_data['dataset_results']['mixed_scenarios']['PBA']['mean_computation_time'] * 1e6
             
             current_avg_ece = np.mean([item['current_ece'] for item in comparison_data])
             current_avg_auroc = np.mean([item['current_auroc'] for item in comparison_data])
             current_avg_time = np.mean([item['current_time'] for item in comparison_data])
             
-            print(f"TAP ECE - Previous: {previous_tap_ece:.4f}, Current: {current_avg_ece:.4f}")
-            print(f"TAP AUROC - Previous: {previous_tap_auroc:.3f}, Current: {current_avg_auroc:.3f}")
-            print(f"TAP Time - Previous: {previous_tap_time:.1f}μs, Current: {current_avg_time:.1f}μs")
+            print(f"PBA ECE - Previous: {previous_pba_ece:.4f}, Current: {current_avg_ece:.4f}")
+            print(f"PBA AUROC - Previous: {previous_pba_auroc:.3f}, Current: {current_avg_auroc:.3f}")
+            print(f"PBA Time - Previous: {previous_pba_time:.1f}μs, Current: {current_avg_time:.1f}μs")
             
             # Reproducibility assessment
-            ece_diff = abs(current_avg_ece - previous_tap_ece)
-            auroc_diff = abs(current_avg_auroc - previous_tap_auroc)
-            time_diff = abs(current_avg_time - previous_tap_time)
+            ece_diff = abs(current_avg_ece - previous_pba_ece)
+            auroc_diff = abs(current_avg_auroc - previous_pba_auroc)
+            time_diff = abs(current_avg_time - previous_pba_time)
             
             print(f"\nREPRODUCIBILITY ASSESSMENT:")
             print("-" * 30)
@@ -655,7 +655,7 @@ def main():
     results = runner.run_full_reproducibility_experiment()
     
     print(f"\n🎉 REPRODUCIBILITY EXPERIMENT COMPLETED!")
-    print(f"Results demonstrate TAP method consistency across:")
+    print(f"Results demonstrate PBA method consistency across:")
     print(f"• Multiple model architectures")
     print(f"• Real datasets (TruthfulQA, MMLU)")
     print(f"• Independent experimental runs")

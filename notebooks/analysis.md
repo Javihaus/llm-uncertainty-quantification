@@ -1,4 +1,4 @@
-# TAP Uncertainty Analysis
+# PBA Uncertainty Analysis
 
 ## Quick Start
 
@@ -9,7 +9,7 @@ To replicate the experiments:
 pip install torch transformers datasets numpy pandas scikit-learn matplotlib
 
 # Run basic validation
-python3 validate_tap.py
+python3 validate_pba.py
 
 # Run full experiments (requires transformers library)
 python3 src/experiments.py --models gpt2 --datasets factual truthfulqa --num-samples 50
@@ -32,9 +32,9 @@ for model in results:
 
 ## Key Implementation Details
 
-### TAP Uncertainty Formula
+### PBA Uncertainty Formula
 ```python
-def tap_uncertainty(logits, targets, beta=1.0):
+def pba_uncertainty(logits, targets, beta=0.5):
     probs = softmax(logits)
     target_probs = probs.gather(-1, targets.unsqueeze(-1))
     perplexities = 1.0 / target_probs

@@ -1,6 +1,6 @@
 """
-TAP (Theory of Adjacent Possible) Uncertainty Quantification for LLMs
-Based on: "Information-Theoretic Uncertainty Quantification for Large Language Models"
+PBA (Perplexity-Based Adjacency) Uncertainty Quantification for LLMs
+Based on: "Perplexity-Based Adjacency for Uncertainty Quantification in Large Language Models"
 """
 
 import torch
@@ -9,13 +9,13 @@ from typing import List, Dict, Optional, Tuple
 import time
 
 
-class TAPUncertainty:
-    """TAP uncertainty quantification implementation."""
+class PBAUncertainty:
+    """PBA uncertainty quantification implementation."""
     
-    def __init__(self, beta: float = 1.0, alpha: float = 0.9):
+    def __init__(self, beta: float = 0.5, alpha: float = 0.9):
         """
-        Initialize TAP uncertainty method.
-        
+        Initialize PBA uncertainty method.
+
         Args:
             beta: Sensitivity parameter for perplexity-to-uncertainty mapping
             alpha: Probability mass threshold for adjacent possible definition
@@ -23,43 +23,74 @@ class TAPUncertainty:
         self.beta = beta
         self.alpha = alpha
     
-    def compute_uncertainty(self, logits: torch.Tensor, target_tokens: torch.Tensor) -> Dict[str, float]:
+    def compute_uncertainty(self, logits: torch.Tensor, target_tokens: torch.Tensor = None) -> Dict[str, float]:
         """
-        Compute TAP uncertainty for a sequence.
-        
+        Compute PBA uncertainty following Algorithm 1 from the paper.
+
         Args:
-            logits: Model logits [seq_len, vocab_size]
-            target_tokens: Target token ids [seq_len]
-            
+            logits: Model logits [seq_len, vocab_size] (or [vocab_size] for single context)
+            target_tokens: Target token ids [seq_len] (optional, used for evaluation)
+
         Returns:
             Dictionary with uncertainty measures
         """
         start_time = time.time()
-        
-        # Convert logits to probabilities
+
+        # Step 2: Convert logits to probabilities (softmax)
         probs = torch.softmax(logits, dim=-1)
-        
-        # Compute perplexity for each token
-        token_probs = probs.gather(-1, target_tokens.unsqueeze(-1)).squeeze(-1)
-        perplexities = 1.0 / token_probs
-        
-        # TAP uncertainty using exponential mapping
-        token_uncertainties = 1.0 - torch.exp(-self.beta * perplexities)
-        
-        # Sequence-level uncertainty (mean)
-        sequence_uncertainty = token_uncertainties.mean().item()
-        
-        # Additional measures
-        entropy = self._compute_entropy(probs)
-        adjacent_possible_size = self._compute_adjacent_possible_size(probs)
-        
+
+        # Handle single context case
+        if probs.dim() == 1:
+            probs = probs.unsqueeze(0)
+            single_context = True
+        else:
+            single_context = False
+
+        uncertainties = []
+        perplexities = []
+
+        for i in range(probs.size(0)):
+            context_probs = probs[i]
+
+            # Steps 4-5: Define adjacent possible P(c) based on probability mass threshold
+            sorted_probs, _ = torch.sort(context_probs, descending=True)
+            cumsum = torch.cumsum(sorted_probs, dim=0)
+
+            # Find threshold τα that captures α fraction of probability mass
+            threshold_idx = torch.argmax((cumsum >= self.alpha).float())
+            tau_alpha = sorted_probs[threshold_idx].item()
+
+            # Adjacent possible: tokens with probability ≥ τα
+            adjacent_possible_mask = context_probs >= tau_alpha
+            adjacent_possible_probs = context_probs[adjacent_possible_mask]
+
+            # Step 6: Compute entropy over adjacent possible
+            if len(adjacent_possible_probs) > 0:
+                entropy = -(adjacent_possible_probs * torch.log(adjacent_possible_probs + 1e-10)).sum()
+            else:
+                entropy = torch.tensor(0.0)
+
+            # Step 7: Compute perplexity = 2^entropy
+            perplexity = 2.0 ** entropy
+            perplexities.append(perplexity.item())
+
+            # Step 8: Compute PBA uncertainty
+            uncertainty = 1.0 - torch.exp(-self.beta * perplexity)
+            uncertainties.append(uncertainty.item())
+
+        # Average over sequence
+        if single_context:
+            sequence_uncertainty = uncertainties[0]
+            mean_perplexity = perplexities[0]
+        else:
+            sequence_uncertainty = sum(uncertainties) / len(uncertainties)
+            mean_perplexity = sum(perplexities) / len(perplexities)
+
         computation_time = time.time() - start_time
-        
+
         return {
-            'tap_uncertainty': sequence_uncertainty,
-            'mean_perplexity': perplexities.mean().item(),
-            'mean_entropy': entropy.mean().item(),
-            'adjacent_possible_size': adjacent_possible_size.mean().item(),
+            'pba_uncertainty': sequence_uncertainty,
+            'mean_perplexity': mean_perplexity,
             'computation_time': computation_time
         }
     
@@ -147,7 +178,7 @@ class UncertaintyEvaluator:
     """Evaluate uncertainty methods using various metrics."""
     
     def __init__(self):
-        self.tap = TAPUncertainty()
+        self.pba = PBAUncertainty()
         self.baselines = BaselineUncertaintyMethods()
     
     def evaluate_all_methods(self, logits: torch.Tensor, target_tokens: torch.Tensor, 
@@ -165,8 +196,8 @@ class UncertaintyEvaluator:
         """
         results = {}
         
-        # TAP method
-        results['tap'] = self.tap.compute_uncertainty(logits, target_tokens)
+        # PBA method
+        results['pba'] = self.pba.compute_uncertainty(logits, target_tokens)
         
         # Baseline methods
         results['softmax'] = self.baselines.softmax_confidence(logits, target_tokens)

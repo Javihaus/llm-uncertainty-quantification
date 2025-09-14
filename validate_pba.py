@@ -5,13 +5,13 @@ import json
 import os
 from datetime import datetime
 
-# Simple TAP implementation for validation
-class SimpleTAP:
-    def __init__(self, beta=1.0):
+# Simple PBA implementation for validation
+class SimplePBA:
+    def __init__(self, beta=0.5):
         self.beta = beta
     
     def compute_uncertainty(self, logits, target_tokens):
-        """Compute TAP uncertainty."""
+        """Compute PBA uncertainty."""
         # Convert logits to probabilities
         exp_logits = np.exp(logits - np.max(logits, axis=-1, keepdims=True))
         probs = exp_logits / np.sum(exp_logits, axis=-1, keepdims=True)
@@ -22,7 +22,7 @@ class SimpleTAP:
         # Compute perplexity
         perplexities = 1.0 / (target_probs + 1e-10)
         
-        # TAP uncertainty
+        # PBA uncertainty
         uncertainties = 1.0 - np.exp(-self.beta * perplexities)
         
         # Entropy
@@ -30,7 +30,7 @@ class SimpleTAP:
         entropy = -np.sum(probs * log_probs, axis=-1)
         
         return {
-            'tap_uncertainty': np.mean(uncertainties),
+            'pba_uncertainty': np.mean(uncertainties),
             'mean_perplexity': np.mean(perplexities),
             'mean_entropy': np.mean(entropy),
             'individual_uncertainties': uncertainties.tolist(),
@@ -63,12 +63,12 @@ def create_test_cases():
     ]
 
 def run_validation():
-    """Run TAP validation experiment."""
-    print("TAP Uncertainty Quantification - Validation Experiment")
+    """Run PBA validation experiment."""
+    print("PBA Uncertainty Quantification - Validation Experiment")
     print("=" * 60)
     print(f"Timestamp: {datetime.now()}")
     
-    tap = SimpleTAP(beta=1.0)
+    pba = SimplePBA(beta=0.5)
     test_cases = create_test_cases()
     results = {}
     
@@ -77,10 +77,10 @@ def run_validation():
         print("-" * 30)
         
         start_time = time.time()
-        result = tap.compute_uncertainty(logits, targets)
+        result = pba.compute_uncertainty(logits, targets)
         computation_time = time.time() - start_time
         
-        print(f"TAP Uncertainty:  {result['tap_uncertainty']:.4f}")
+        print(f"PBA Uncertainty:  {result['pba_uncertainty']:.4f}")
         print(f"Mean Perplexity:  {result['mean_perplexity']:.4f}")
         print(f"Mean Entropy:     {result['mean_entropy']:.4f}")
         print(f"Computation Time: {computation_time:.6f}s")
@@ -100,13 +100,13 @@ def run_validation():
     
     checks = [
         ("Low conf > High conf uncertainty", 
-         low_conf['tap_uncertainty'] > high_conf['tap_uncertainty']),
+         low_conf['pba_uncertainty'] > high_conf['pba_uncertainty']),
         ("Low conf > High conf perplexity", 
          low_conf['mean_perplexity'] > high_conf['mean_perplexity']),
         ("Low conf > High conf entropy", 
          low_conf['mean_entropy'] > high_conf['mean_entropy']),
         ("Medium between high and low", 
-         high_conf['tap_uncertainty'] < med_conf['tap_uncertainty'] < low_conf['tap_uncertainty']),
+         high_conf['pba_uncertainty'] < med_conf['pba_uncertainty'] < low_conf['pba_uncertainty']),
         ("Fast computation (< 1ms)", 
          all(r['computation_time'] < 0.001 for r in results.values()))
     ]
@@ -127,23 +127,23 @@ def run_validation():
         'all_checks_passed': all_passed
     }
     
-    with open('results/tap_validation.json', 'w') as f:
+    with open('results/pba_validation.json', 'w') as f:
         json.dump(output_data, f, indent=2, default=str)
     
-    print(f"\nResults saved to: results/tap_validation.json")
+    print(f"\nResults saved to: results/pba_validation.json")
     
     if all_passed:
         print("\n🎉 ALL VALIDATIONS PASSED!")
-        print("TAP implementation is working correctly.")
+        print("PBA implementation is working correctly.")
         
         # Create simple summary
         summary = {
-            'method': 'TAP (Theory of Adjacent Possible)',
+            'method': 'PBA (Theory of Adjacent Possible)',
             'validation_status': 'PASSED',
             'key_findings': [
-                f"TAP uncertainty correctly increases with model uncertainty",
-                f"High confidence case: {high_conf['tap_uncertainty']:.4f}",
-                f"Low confidence case: {low_conf['tap_uncertainty']:.4f}",
+                f"PBA uncertainty correctly increases with model uncertainty",
+                f"High confidence case: {high_conf['pba_uncertainty']:.4f}",
+                f"Low confidence case: {low_conf['pba_uncertainty']:.4f}",
                 f"Computation time: ~{np.mean([r['computation_time'] for r in results.values()])*1000:.2f}μs per sample"
             ],
             'next_steps': [

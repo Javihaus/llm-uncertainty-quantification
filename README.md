@@ -1,10 +1,10 @@
 # LLM Uncertainty Quantification
 
-This repository contains experimental validation of the TAP (Theory of Adjacent Possible) uncertainty quantification method for Large Language Models, as described in the paper "Information-Theoretic Uncertainty Quantification for Large Language Models: Grounding Adjacent Possible Theory in Next-Token Probabilities".
+This repository contains experimental validation of the PBA (Perplexity-Based Adjacency) uncertainty quantification method for Large Language Models, as described in the paper "Perplexity-Based Adjacency for Uncertainty Quantification in Large Language Models".
 
 ## Overview
 
-The TAP method measures uncertainty through perplexity, interpreting high entropy distributions as large adjacent possible spaces and low entropy as constrained possibility spaces. This eliminates arbitrary distance thresholds while providing uncertainty estimates calibrated to the model's learned distribution.
+The PBA method measures uncertainty through perplexity, treating high-entropy distributions as large possibility spaces and low-entropy distributions as constrained spaces. This eliminates arbitrary distance thresholds while providing uncertainty estimates calibrated to the model's learned distribution.
 
 ## Experiments
 
@@ -18,7 +18,7 @@ We validate the method using:
 
 ```
 ├── src/
-│   ├── uncertainty_methods.py    # TAP and baseline uncertainty implementations
+│   ├── uncertainty_methods.py    # PBA and baseline uncertainty implementations
 │   ├── models.py                # Model interfaces
 │   ├── metrics.py               # Evaluation metrics
 │   ├── datasets.py              # Data loading and preprocessing

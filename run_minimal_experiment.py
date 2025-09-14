@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Minimal experiment to validate TAP uncertainty quantification
+Minimal experiment to validate PBA uncertainty quantification
 """
 import sys
 import os
@@ -64,17 +64,17 @@ class DummyModel:
 sys.modules['transformers'] = DummyTransformers()
 
 # Now import our modules
-from uncertainty_methods import TAPUncertainty, BaselineUncertaintyMethods
+from uncertainty_methods import PBAUncertainty, BaselineUncertaintyMethods
 
-def run_minimal_tap_experiment():
-    """Run minimal TAP experiment with synthetic data."""
+def run_minimal_pba_experiment():
+    """Run minimal PBA experiment with synthetic data."""
     print("="*60)
-    print("MINIMAL TAP UNCERTAINTY QUANTIFICATION EXPERIMENT")
+    print("MINIMAL PBA UNCERTAINTY QUANTIFICATION EXPERIMENT")
     print("="*60)
     print(f"Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Initialize methods
-    tap = TAPUncertainty(beta=1.0, alpha=0.9)
+    pba = PBAUncertainty(beta=0.5, alpha=0.9)
     baselines = BaselineUncertaintyMethods()
     
     # Create synthetic test cases
@@ -113,10 +113,10 @@ def run_minimal_tap_experiment():
         logits_tensor = torch.from_numpy(logits).float()
         targets_tensor = torch.from_numpy(target_tokens).long()
         
-        # Test TAP method
+        # Test PBA method
         start_time = time.time()
-        tap_results = tap.compute_uncertainty(logits_tensor, targets_tensor)
-        tap_time = time.time() - start_time
+        pba_results = pba.compute_uncertainty(logits_tensor, targets_tensor)
+        pba_time = time.time() - start_time
         
         # Test baseline methods
         softmax_results = baselines.softmax_confidence(logits_tensor, targets_tensor)
@@ -124,29 +124,29 @@ def run_minimal_tap_experiment():
         predictive_results = baselines.predictive_entropy(logits_tensor, targets_tensor)
         
         # Display results
-        print(f"TAP Uncertainty:        {tap_results['tap_uncertainty']:.4f}")
-        print(f"Mean Perplexity:        {tap_results['mean_perplexity']:.4f}")
-        print(f"Mean Entropy:           {tap_results['mean_entropy']:.4f}")
-        print(f"Adjacent Possible Size: {tap_results['adjacent_possible_size']:.2f}")
+        print(f"PBA Uncertainty:        {pba_results['pba_uncertainty']:.4f}")
+        print(f"Mean Perplexity:        {pba_results['mean_perplexity']:.4f}")
+        print(f"Mean Entropy:           {pba_results['mean_entropy']:.4f}")
+        print(f"Adjacent Possible Size: {pba_results['adjacent_possible_size']:.2f}")
         print(f"")
         print(f"Softmax Uncertainty:    {softmax_results['softmax_uncertainty']:.4f}")
         print(f"Entropy Uncertainty:    {entropy_results['entropy_uncertainty']:.4f}")
         print(f"Predictive Entropy:     {predictive_results['predictive_entropy']:.4f}")
         print(f"")
         print(f"Computation Times:")
-        print(f"  TAP:               {tap_results['computation_time']:.6f}s")
+        print(f"  PBA:               {pba_results['computation_time']:.6f}s")
         print(f"  Softmax:           {softmax_results['computation_time']:.6f}s")
         print(f"  Entropy:           {entropy_results['computation_time']:.6f}s")
         print(f"  Predictive:        {predictive_results['computation_time']:.6f}s")
         
         # Store results
         results[test_case['name']] = {
-            'tap_uncertainty': float(tap_results['tap_uncertainty']),
-            'mean_perplexity': float(tap_results['mean_perplexity']),
+            'pba_uncertainty': float(pba_results['pba_uncertainty']),
+            'mean_perplexity': float(pba_results['mean_perplexity']),
             'softmax_uncertainty': float(softmax_results['softmax_uncertainty']),
             'entropy_uncertainty': float(entropy_results['entropy_uncertainty']),
             'predictive_entropy': float(predictive_results['predictive_entropy']),
-            'tap_computation_time': float(tap_results['computation_time'])
+            'pba_computation_time': float(pba_results['computation_time'])
         }
     
     # Validation checks
@@ -158,14 +158,14 @@ def run_minimal_tap_experiment():
     low_conf = results['Low Confidence (High Uncertainty)']
     
     validations = [
-        ('TAP uncertainty increases with model uncertainty', 
-         low_conf['tap_uncertainty'] > high_conf['tap_uncertainty']),
+        ('PBA uncertainty increases with model uncertainty', 
+         low_conf['pba_uncertainty'] > high_conf['pba_uncertainty']),
         ('Perplexity increases with model uncertainty',
          low_conf['mean_perplexity'] > high_conf['mean_perplexity']),
         ('Entropy uncertainty increases with model uncertainty',
          low_conf['entropy_uncertainty'] > high_conf['entropy_uncertainty']),
-        ('TAP computation is fast (< 1ms per case)',
-         high_conf['tap_computation_time'] < 0.001)
+        ('PBA computation is fast (< 1ms per case)',
+         high_conf['pba_computation_time'] < 0.001)
     ]
     
     all_passed = True
@@ -188,7 +188,7 @@ def run_minimal_tap_experiment():
     print(f"\n{'='*60}")
     if all_passed:
         print("🎉 ALL VALIDATIONS PASSED!")
-        print("TAP uncertainty quantification is working correctly.")
+        print("PBA uncertainty quantification is working correctly.")
     else:
         print("⚠️  SOME VALIDATIONS FAILED")
         print("Check the implementation for issues.")
@@ -225,7 +225,7 @@ def create_medium_confidence_logits():
 
 if __name__ == "__main__":
     try:
-        results, success = run_minimal_tap_experiment()
+        results, success = run_minimal_pba_experiment()
         
         if success:
             print("\n🚀 Ready to run full experiments!")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Basic test of TAP uncertainty quantification implementation
+Basic test of PBA uncertainty quantification implementation
 """
 
 import sys
@@ -9,11 +9,11 @@ sys.path.append('src')
 
 import torch
 import numpy as np
-from uncertainty_methods import TAPUncertainty, BaselineUncertaintyMethods
+from uncertainty_methods import PBAUncertainty, BaselineUncertaintyMethods
 
-def test_tap_implementation():
-    """Test TAP uncertainty implementation with dummy data."""
-    print("Testing TAP Uncertainty Implementation")
+def test_pba_implementation():
+    """Test PBA uncertainty implementation with dummy data."""
+    print("Testing PBA Uncertainty Implementation")
     print("="*50)
     
     # Create dummy logits and target tokens
@@ -28,13 +28,13 @@ def test_tap_implementation():
     # Low confidence case (high uncertainty expected)
     low_conf_logits = torch.randn(seq_len, vocab_size) * 0.1  # Flat distribution
     
-    # Initialize TAP method
-    tap = TAPUncertainty(beta=1.0, alpha=0.9)
+    # Initialize PBA method
+    pba = PBAUncertainty(beta=0.5, alpha=0.9)
     baselines = BaselineUncertaintyMethods()
     
     print("\n1. High Confidence Case (should have low uncertainty):")
-    results_high = tap.compute_uncertainty(high_conf_logits, target_tokens)
-    print(f"   TAP Uncertainty: {results_high['tap_uncertainty']:.4f}")
+    results_high = pba.compute_uncertainty(high_conf_logits, target_tokens)
+    print(f"   PBA Uncertainty: {results_high['pba_uncertainty']:.4f}")
     print(f"   Mean Perplexity: {results_high['mean_perplexity']:.4f}")
     print(f"   Mean Entropy: {results_high['mean_entropy']:.4f}")
     
@@ -46,8 +46,8 @@ def test_tap_implementation():
     print(f"   Entropy Uncertainty: {entropy_results['entropy_uncertainty']:.4f}")
     
     print("\n2. Low Confidence Case (should have high uncertainty):")
-    results_low = tap.compute_uncertainty(low_conf_logits, target_tokens)
-    print(f"   TAP Uncertainty: {results_low['tap_uncertainty']:.4f}")
+    results_low = pba.compute_uncertainty(low_conf_logits, target_tokens)
+    print(f"   PBA Uncertainty: {results_low['pba_uncertainty']:.4f}")
     print(f"   Mean Perplexity: {results_low['mean_perplexity']:.4f}")
     print(f"   Mean Entropy: {results_low['mean_entropy']:.4f}")
     
@@ -59,17 +59,17 @@ def test_tap_implementation():
     print(f"   Entropy Uncertainty: {entropy_results_low['entropy_uncertainty']:.4f}")
     
     print("\n3. Validation:")
-    print(f"   TAP uncertainty increased: {results_low['tap_uncertainty'] > results_high['tap_uncertainty']}")
+    print(f"   PBA uncertainty increased: {results_low['pba_uncertainty'] > results_high['pba_uncertainty']}")
     print(f"   Perplexity increased: {results_low['mean_perplexity'] > results_high['mean_perplexity']}")
     print(f"   Entropy increased: {results_low['mean_entropy'] > results_high['mean_entropy']}")
     
     print("\n4. Computation Times:")
-    print(f"   TAP (high conf): {results_high['computation_time']:.6f}s")
-    print(f"   TAP (low conf): {results_low['computation_time']:.6f}s")
+    print(f"   PBA (high conf): {results_high['computation_time']:.6f}s")
+    print(f"   PBA (low conf): {results_low['computation_time']:.6f}s")
     print(f"   Softmax (high conf): {softmax_results['computation_time']:.6f}s")
     print(f"   Entropy (high conf): {entropy_results['computation_time']:.6f}s")
     
-    print("\n✓ Basic TAP implementation test completed successfully!")
+    print("\n✓ Basic PBA implementation test completed successfully!")
 
 def test_calibration_metrics():
     """Test calibration metrics with dummy data."""
@@ -111,10 +111,10 @@ def test_calibration_metrics():
     print("\n✓ Calibration metrics test completed successfully!")
 
 if __name__ == "__main__":
-    test_tap_implementation()
+    test_pba_implementation()
     test_calibration_metrics()
     
     print("\n" + "="*80)
     print("ALL TESTS PASSED! ✓")
-    print("The TAP uncertainty quantification implementation is working correctly.")
+    print("The PBA uncertainty quantification implementation is working correctly.")
     print("="*80)
