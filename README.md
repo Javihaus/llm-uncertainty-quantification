@@ -1,4 +1,4 @@
-# LLM Uncertainty Quantification
+# Perplexity-Based Adjacency for Uncertainty Quantification in LLMs
 
 This repository contains experimental validation of the PBA (Perplexity-Based Adjacency) uncertainty quantification method for Large Language Models, as described in the paper "Perplexity-Based Adjacency for Uncertainty Quantification in Large Language Models".
 
